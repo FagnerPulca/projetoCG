@@ -76,10 +76,10 @@ class Cube(object):
         
 class Map():
     def __init__(self):
-        mapa = [[1,0,1,0,1],
-                [1,0,1,0,1],
-                [1,0,1,0,0],
-                [1,1,1,0,0]]
+        mapa = [[0,0,1,1,1,1,1,1,1],
+                [1,0,1,0,1,1,0,0,1],
+                [1,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,0,1]]
         self.cubos = []
 
         for i in range(len(mapa)):
@@ -119,7 +119,9 @@ def main():
     gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
     
     #glTranslatef(0.0,0.0, -5)
-    gluLookAt(-4.0,0.0,2.0,1.0,0.0,0.0,0.0,1.0,0.0)
+    gluLookAt( 0.0,0.0,-2.0,
+               0.0,0.0,4.0,
+               0.0,-1.0,0.0)
 
     #Habilita o z-Buffer
     glEnable(GL_DEPTH_TEST)
