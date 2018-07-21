@@ -73,6 +73,34 @@ class Cube(object):
                 if (i > 3):
                     i = 0
         glEnd()
+
+class Ground(object):
+
+    def __init__(self, posicao):
+        self.posicao = posicao
+
+    
+    def desenhar(self):
+        chao = (
+            (-1+self.posicao[0],1+self.posicao[1],1+self.posicao[2]),
+            (1+self.posicao[0],1+self.posicao[1],1+self.posicao[2]),
+            (1+self.posicao[0],1+self.posicao[1],-1+self.posicao[2]),
+            (-1+self.posicao[0],1+self.posicao[1],-1+self.posicao[2]),
+        )
+
+        texture_vertices = (
+            (0,0),
+            (1,0),
+            (1,1),
+            (0,1)
+            )
+        i = 0
+        glBegin(GL_QUADS)
+        for vertice in chao:
+            glTexCoord2f(texture_vertices[i][0], texture_vertices[i][1])
+            glVertex3fv(vertice)
+            i += 1
+        glEnd()
         
 class Map():
     def __init__(self):
@@ -81,17 +109,26 @@ class Map():
                 [1,0,0,0,0,0,0,0,1],
                 [1,1,1,1,1,1,1,0,1]]
         self.cubos = []
+        self.ground = []
 
+        
         for i in range(len(mapa)):
             for j in range(len(mapa[i])):
                 if (mapa[i][j] == 1):
                     cubo = Cube((i*2,0,j*2))
                     self.cubos.append(cubo)
+                if (mapa[i][j] == 0):
+                    ground = Ground((i*2,0,j*2))
+                    self.ground.append(ground)
 
     def desenhar(self):
         for cubo in self.cubos:
             cubo.desenhar()
+        for ground in self.ground:
+            ground.desenhar()
+        
 
+    
 #Função para carregar a textura
 def loadTexture():
 
@@ -112,6 +149,8 @@ def loadTexture():
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
 
         return texid
+
+
 def main():
     pygame.init()
     display = (800,600)
@@ -120,6 +159,10 @@ def main():
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
+
+
+    #Carrega os audios
+    trilha_sonora = pygame.mixer.Sound('trilha_sonora.ogg')
     
     #glTranslatef(0.0,0.0,0.0)
 ##    gluLookAt(0.0,0.0,0.0,
@@ -137,9 +180,12 @@ def main():
 
     #carrega Textura
     loadTexture()
-    
+
+    #toca trilha sonora
+    trilha_sonora.play()
+
     while True:
-        
+            
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -151,6 +197,7 @@ def main():
         glPushMatrix()
         mapa = Map()
         mapa.desenhar()
+        
         glPopMatrix()
         
         
@@ -161,6 +208,7 @@ def main():
             camera_z = x[3][2]
             print camera_x,",",camera_z
             if event.key == pygame.K_UP:
+                
                 #if (camera_x <= 5):
 ##                if (p == True):
 ##                    gluLookAt( 0.0,0.0,0.0,
@@ -169,6 +217,8 @@ def main():
 ##                    p = False
                 glTranslatef(0,0,-0.1)
             if event.key == pygame.K_DOWN:
+                
+                
 ##                if (p == True):
 ##                    gluLookAt( 0.0,0.0,0.0,
 ##                               0.0,0.0,1.0,
@@ -176,6 +226,7 @@ def main():
 ##                    p = False
                 glTranslatef(0,0,0.1)
             if event.key == pygame.K_LEFT:
+                
 ##                if (p == True):
 ##                    glMatrixMode(GL_MODELVIEW)
 ##                    glLoadIdentity()
@@ -185,15 +236,17 @@ def main():
 ##                    p = False
                 glTranslatef(0.1,0,0)
             if event.key == pygame.K_RIGHT:
-                if (p == True):
-                    glMatrixMode(GL_MODELVIEW)
-                    glLoadIdentity()
-                    gluLookAt(camera_x,0.0,camera_z,
-                              camera_x+2,0.0,camera_z,
-                              0.0,-1.0,0.0)
-                    p = False
+                
+                
+##                if (p == True):
+##                    glMatrixMode(GL_MODELVIEW)
+##                    glLoadIdentity()
+##                    gluLookAt(camera_x,0.0,camera_z,
+##                              camera_x+2,0.0,camera_z,
+##                              0.0,-1.0,0.0)
+##                    p = False
                 glTranslatef(-0.1,0,0)
-        
+            
         pygame.display.flip()
         pygame.time.wait(10)
 
