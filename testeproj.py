@@ -116,13 +116,22 @@ def main():
     pygame.init()
     display = (800,600)
     pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
+    
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
     gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
     
-    #glTranslatef(0.0,0.0, -5)
-    gluLookAt( 0.0,0.0,-2.0,
-               0.0,0.0,4.0,
-               0.0,-1.0,0.0)
-
+    #glTranslatef(0.0,0.0,0.0)
+##    gluLookAt(0.0,0.0,0.0,
+##              0.0,0.0,2.0,
+##              0.0,-1.0,0.0)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    gluLookAt(0.0,0.0,-2.0,
+              0.0,0.0,4.0,
+              0.0,-1.0,0.0)
+    p = True
+    
     #Habilita o z-Buffer
     glEnable(GL_DEPTH_TEST)
 
@@ -146,26 +155,44 @@ def main():
         
         
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_a:
+            x = glGetDoublev(GL_MODELVIEW_MATRIX)
+            camera_x = x[3][0]
+            camera_y = x[3][1]
+            camera_z = x[3][2]
+            print camera_x,",",camera_z
+            if event.key == pygame.K_UP:
                 #if (camera_x <= 5):
-                glTranslatef(0.1,0,0)
-            if event.key == pygame.K_d:
-                glTranslatef(-0.1,0,0)
-            if event.key == pygame.K_w:
-                glTranslatef(0,0,0.1)
-            if event.key == pygame.K_s:
+##                if (p == True):
+##                    gluLookAt( 0.0,0.0,0.0,
+##                               0.0,0.0,1.0,
+##                               0.0,-1.0,0.0)
+##                    p = False
                 glTranslatef(0,0,-0.1)
-            if event.key == pygame.K_q:
-##                gluLookAt(camera_x,camera_y,camera_z, 1.0,0.0,0.0, 0.0,-1.0,0.0)
-                glRotatef(3,0,-1,0)
-            if event.key == pygame.K_e:
-                glRotatef(3,0,1,0)
-        
-        x = glGetDoublev(GL_MODELVIEW_MATRIX)
-        camera_x = x[3][0]
-        camera_y = x[3][1]
-        camera_z = x[3][2]
-##        print camera_x
+            if event.key == pygame.K_DOWN:
+##                if (p == True):
+##                    gluLookAt( 0.0,0.0,0.0,
+##                               0.0,0.0,1.0,
+##                               0.0,-1.0,0.0)
+##                    p = False
+                glTranslatef(0,0,0.1)
+            if event.key == pygame.K_LEFT:
+##                if (p == True):
+##                    glMatrixMode(GL_MODELVIEW)
+##                    glLoadIdentity()
+##                    gluLookAt(camera_x,0.0,camera_z,
+##                              camera_x-2,0.0,camera_z,
+##                              0.0,-1.0,0.0)
+##                    p = False
+                glTranslatef(0.1,0,0)
+            if event.key == pygame.K_RIGHT:
+                if (p == True):
+                    glMatrixMode(GL_MODELVIEW)
+                    glLoadIdentity()
+                    gluLookAt(camera_x,0.0,camera_z,
+                              camera_x+2,0.0,camera_z,
+                              0.0,-1.0,0.0)
+                    p = False
+                glTranslatef(-0.1,0,0)
         
         pygame.display.flip()
         pygame.time.wait(10)
