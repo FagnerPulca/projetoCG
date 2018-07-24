@@ -127,8 +127,25 @@ class Map():
         for ground in self.ground:
             ground.desenhar()
         
-
+def iluminacao():
     
+    glShadeModel(GL_SMOOTH)
+    glEnable(GL_DEPTH_TEST)
+    glEnable(GL_LIGHTING)
+    
+    lightZeroPosition = [10., 10, 6., 1.]
+    lightZeroColor = [0.5, 0.5, 0.5, 1.0]
+    lightEspecular = [2., 4., 10., 1.]
+    
+    glLightfv(GL_LIGHT0, GL_POSITION, lightZeroPosition)
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightZeroColor)
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightEspecular)
+    glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.1)
+    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.05)
+    
+    glEnable(GL_LIGHT0)
+    
+
 #Função para carregar a textura
 def loadTexture():
 
@@ -184,6 +201,9 @@ def main():
     #toca trilha sonora
     trilha_sonora.play()
 
+##    glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA)
+    iluminacao()
+    
     while True:
             
         for event in pygame.event.get():
