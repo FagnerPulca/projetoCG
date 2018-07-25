@@ -1,9 +1,15 @@
-import pygame
-from pygame.locals import *
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+import pygame
+import random
+import math
+import sys
+
+from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import random
+
 
 class Cube(object):
     def __init__(self, posicao):
@@ -146,7 +152,7 @@ def iluminacao():
     glEnable(GL_LIGHT0)
     
 
-#Fun��o para carregar a textura
+#Função para carregar a textura
 def loadTexture():
 
         textureSurface = pygame.image.load('textura_parede.jpeg') #carrega imagem da textura
@@ -181,16 +187,23 @@ def main():
     #Carrega os audios
     trilha_sonora = pygame.mixer.Sound('trilha_sonora.ogg')
     
-    #glTranslatef(0.0,0.0,0.0)
-##    gluLookAt(0.0,0.0,0.0,
-##              0.0,0.0,2.0,
-##              0.0,-1.0,0.0)
+
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
     gluLookAt(0.0,0.0,-2.0,
               0.0,0.0,4.0,
               0.0,-1.0,0.0)
-    p = True
+
+    global angle, lx, lz, x, z, speed
+    #Variáveis global usadas para movimentos da camera
+    angle = 0.0
+    lx = 0.0
+    lz = 1.0
+    x = 0.0
+    z = -2.0
+
+    #Fração da movimentação na direção da linha de visão
+    speed = 0.1 
     
     #Habilita o z-Buffer
     glEnable(GL_DEPTH_TEST)
@@ -208,8 +221,8 @@ def main():
             
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+                sys.exit(pygame.quit())
+                
 
         #glRotatef(1, 3, 1, 1)
         
@@ -222,53 +235,54 @@ def main():
         
         
         if event.type == pygame.KEYDOWN:
-            x = glGetDoublev(GL_MODELVIEW_MATRIX)
-            camera_x = x[3][0]
-            camera_y = x[3][1]
-            camera_z = x[3][2]
-            print camera_x,",",camera_z
+            f = glGetDoublev(GL_MODELVIEW_MATRIX)
+            camera_x = f[3][0]
+            camera_y = f[3][1]
+            camera_z = f[3][2]
+
+            
+                        
+            #print camera_x,",",camera_z
+            
             if event.key == pygame.K_UP:
+                global lx, lz, x, z, speed
+                #movimentação na direção da linha de visão (sentido Frente)
+                #print mapa.mapa[0][3]
+                x += lx * speed 
+                z += lz * speed 
+                #print camera_x,",",camera_z
                 
-                #if (camera_x <= 5):
-##                if (p == True):
-##                    gluLookAt( 0.0,0.0,0.0,
-##                               0.0,0.0,1.0,
-##                               0.0,-1.0,0.0)
-##                    p = False
-                glTranslatef(0,0,-0.1)
             if event.key == pygame.K_DOWN:
+                global lx, lz, x, z, speed
+                #movimentação na direção da linha de visão (sentido Trás)
+                x -= lx * speed 
+                z -= lz * speed 
+                print camera_x,",",camera_z
                 
-                
-##                if (p == True):
-##                    gluLookAt( 0.0,0.0,0.0,
-##                               0.0,0.0,1.0,
-##                               0.0,-1.0,0.0)
-##                    p = False
-                glTranslatef(0,0,0.1)
             if event.key == pygame.K_LEFT:
+                global lx, lz, angle
+                #Rotaciona a linha de visão em a esquerda
+                angle -= 0.1
+                lx = math.sin(angle)
+                lz = math.cos(angle)
+                print camera_x,",",camera_z
                 
-##                if (p == True):
-##                    glMatrixMode(GL_MODELVIEW)
-##                    glLoadIdentity()
-##                    gluLookAt(camera_x,0.0,camera_z,
-##                              camera_x-2,0.0,camera_z,
-##                              0.0,-1.0,0.0)
-##                    p = False
-                glTranslatef(0.1,0,0)
             if event.key == pygame.K_RIGHT:
-                
-                
-##                if (p == True):
-##                    glMatrixMode(GL_MODELVIEW)
-##                    glLoadIdentity()
-##                    gluLookAt(camera_x,0.0,camera_z,
-##                              camera_x+2,0.0,camera_z,
-##                              0.0,-1.0,0.0)
-##                    p = False
-                glTranslatef(-0.1,0,0)
+                global angle, lx, lz
+                #Rotaciona a linha de visão em a direita
+                angle += 0.1
+                lx = math.sin(angle)
+                lz = math.cos(angle)
+                print camera_x,",",camera_z
+
+        # Reset transformations
+        glLoadIdentity()
+	# Set the camera
+        gluLookAt(x, 0.0, z,  x+lx, 0.0, z+lz,  0.0, -1.0,  0.0)
             
         pygame.display.flip()
         pygame.time.wait(10)
 
 
-main()
+if __name__ =="__main__":
+    main()
