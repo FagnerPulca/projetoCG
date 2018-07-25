@@ -10,7 +10,10 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
-
+m = [[0,0,1,1,1,1,1,1,1],
+     [1,0,1,0,1,1,0,0,1],
+     [1,0,0,0,0,0,0,0,1],
+     [1,1,1,1,1,1,1,0,1]]
 
 class Cube(object):
     def __init__(self, posicao):
@@ -184,6 +187,32 @@ def loadTexture(textura):
 
         return texid
 
+def colisao(pos_x, pos_z, vet_x, vet_z, speed):
+    global m
+    index_x = (pos_x + vet_x*speed)/2
+    index_z = (pos_z + vet_z*speed)/2
+    #labNum = m[index_x][index_z]
+    if (abs(index_x - int(index_x)) < 0.5):
+        index_x = int(index_x)
+    else:
+        index_x = int(index_x) + 1
+
+    if (abs(index_z - int(index_z)) < 0.5):
+        index_z = int(index_z)
+    else:
+        index_z = int(index_z) + 1
+    try:
+        if (m[index_x][index_z] == 1):
+            print "colisao"
+            # or index_x > len(m) or index_z > len(m[0])
+            return False
+    except:
+        print "Vc está fora do labirinto"
+        return False
+
+    return True
+        
+    #print index_x," ",index_z
     
 
 def main():
@@ -264,7 +293,7 @@ def main():
                 #print mapa.mapa[0][3]
                 x += lx * speed 
                 z += lz * speed 
-                print camera_x,",",camera_z
+                #print camera_x,",",camera_z
 
                 
                 
@@ -275,7 +304,7 @@ def main():
                 #movimentação na direção da linha de visão (sentido Trás)
                 x -= lx * speed 
                 z -= lz * speed 
-                print camera_x,",",camera_z
+                #print camera_x,",",camera_z
 
 
                 
@@ -286,7 +315,7 @@ def main():
                 angle -= 0.1
                 lx = math.sin(angle)
                 lz = math.cos(angle)
-                print camera_x,",",camera_z
+                #print camera_x,",",camera_z
 
                 
                 
@@ -296,14 +325,25 @@ def main():
                 angle += 0.1
                 lx = math.sin(angle)
                 lz = math.cos(angle)
-                print camera_x,",",camera_z
+                #print camera_x,",",camera_z
 
                 
-            iluminacao(camera_x,camera_y,camera_z + 10)        
-        # Reset transformations
-        glLoadIdentity()
-	# Set the camera
-        gluLookAt(x, 0.0, z,  x+lx, 0.0, z+lz,  0.0, -1.0,  0.0)
+            iluminacao(camera_x,camera_y,camera_z + 10)
+            
+        if (colisao(x,z,lx,lz,speed)):
+            # Reset transformations
+            glLoadIdentity()
+            # Set the camera
+            gluLookAt(x, 0.0, z,  x+lx, 0.0, z+lz,  0.0, -1.0,  0.0)
+            pos_valid = [x,z,(lx),(lz),angle]
+        else:
+            print x," ",z
+            print pos_valid[0]," ",pos_valid[1]
+            x = pos_valid[0]
+            z = pos_valid[1]
+            lx = pos_valid[2]
+            lz = pos_valid[3]
+            angle = pos_valid[4]
         
         pygame.display.flip()
         pygame.time.wait(10)
