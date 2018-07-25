@@ -10,19 +10,11 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
-m = [[0,0,1,1,1,1,1,1,1],
-     [1,0,1,0,1,1,0,0,1],
-     [1,0,0,0,0,0,0,0,1],
-     [1,1,1,1,1,1,1,0,1]]
 
 class Cube(object):
     def __init__(self, posicao):
         self.posicao = posicao
-
-    
-    def desenhar(self):
-        
-        verticies = (
+        self.vertices = (
             
             (-1+self.posicao[0],-1+self.posicao[1],1+self.posicao[2]),
             (1+self.posicao[0],-1+self.posicao[1],1+self.posicao[2]),
@@ -36,7 +28,19 @@ class Cube(object):
             
             )
 
-        edges = (
+        self.centro_massa = ((self.vertices[0][0]+self.vertices[len(self.vertices)-1][0])/2,
+                        (self.vertices[0][1]+self.vertices[len(self.vertices)-1][1])/2,
+                        (self.vertices[0][2]+self.vertices[len(self.vertices)-1][2])/2)
+
+        
+        #print self.vertices,"\n "
+        #print self.centro_massa
+        #print "_____________________________________________________\n"
+    def desenhar(self):
+        
+       
+
+        self.edges = (
             #tras
             (4,5),
             (6,7),
@@ -74,12 +78,11 @@ class Cube(object):
         i = 0
         
         glBegin(GL_QUADS)
-        for edge in edges:
+        for edge in self.edges:
             for vertex in edge:
                 glTexCoord2f(texture_vertices[i][0], texture_vertices[i][1])
-                
-                glVertex3fv(verticies[vertex])
-                
+                glVertex3fv(self.vertices[vertex])
+
                 i += 1
                 if (i > 3):
                     i = 0
@@ -106,36 +109,51 @@ class Ground(object):
             (0,1)
             )
         i = 0
-
-        glEnable(GL_TEXTURE_2D)
-        glBindTexture(GL_TEXTURE_2D, 1)
-        
         glBegin(GL_QUADS)
         for vertice in chao:
             glTexCoord2f(texture_vertices[i][0], texture_vertices[i][1])
             glVertex3fv(vertice)
             i += 1
         glEnd()
-        
+
+
+def verificarColisao(pos_x,pos_z, vet_x ,vet_z, speed, mapa, tam_lado_cubo):
+    nova_x = (pos_x + vet_x*speed )
+    nova_z = (pos_z + vet_z*speed )
+    #print len(mapa.cubos)
+    colisao = True
+    for cubo in mapa.cubos:
+        colisao = True
+        x, y, z = cubo.centro_massa
+        d = math.sqrt((x-nova_x)**2 + (z-nova_z)**2)
+        #print "dist", d
+        #print "x", x, "---", "z",z
+        #if(abs(x-nova_x) > 2 and abs(z - nova_z) > 2 or (pos_x == 0.0 and pos_z == -2.0)):
+        if(d >= tam_lado_cubo):
+            colisao = False
+        else:
+            return colisao
+           
+    return colisao
+    
+    
 class Map():
     def __init__(self):
-        mapa = [[0,0,1,1,1,1,1,1,1],
-                [1,0,1,0,1,1,0,0,1],
-                [1,0,0,0,0,0,0,0,1],
-                [1,1,1,1,1,1,1,0,1]]
+        self.mapa =[[0,0,1,1,1,1,1,1,1],
+                    [1,0,1,0,1,1,0,0,1],
+                    [1,0,0,0,0,0,0,0,1],
+                    [1,1,1,1,1,1,1,0,1]]
         self.cubos = []
         self.ground = []
 
         
-        for i in range(len(mapa)):
-            for j in range(len(mapa[i])):
-                if (mapa[i][j] == 1):
+        for i in range(len(self.mapa)):
+            for j in range(len(self.mapa[i])):
+                if (self.mapa[i][j] == 1):
                     cubo = Cube((i*2,0,j*2))
-                    
                     self.cubos.append(cubo)
-                if (mapa[i][j] == 0):
+                if (self.mapa[i][j] == 0):
                     ground = Ground((i*2,0,j*2))
-                    
                     self.ground.append(ground)
 
     def desenhar(self):
@@ -143,21 +161,21 @@ class Map():
             cubo.desenhar()
         for ground in self.ground:
             ground.desenhar()
-        
-def iluminacao(camera_x,camera_y,camera_z):
+    
+def iluminacao():
     
     glShadeModel(GL_SMOOTH)
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_LIGHTING)
     
-##    lightZeroPosition = [10., 10, 6., 1.]
-    lightZeroPosition = [camera_x,camera_y,camera_z, 1.]
-
-    lightZeroColor = [0.5, 0.5, 0.5, 1]
+    lightZeroPosition = [10., 10, 6., 1.]
+    lightZeroColor = [10.5, 10.5, 10.5, 11.0]
     lightEspecular = [2., 4., 10., 1.]
     
     glLightfv(GL_LIGHT0, GL_POSITION, lightZeroPosition)
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightZeroColor)
+    
+    #glLightfv(GL_LIGHT0, GL_DIFFUSE, lightZeroColor)
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightEspecular)
     glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.1)
     glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.05)
@@ -166,9 +184,9 @@ def iluminacao(camera_x,camera_y,camera_z):
     
 
 #Função para carregar a textura
-def loadTexture(textura):
+def loadTexture():
 
-        textureSurface = pygame.image.load(textura) #carrega imagem da textura
+        textureSurface = pygame.image.load('textura_parede.jpeg') #carrega imagem da textura
         textureData = pygame.image.tostring(textureSurface,"RGBA",1)
         width = textureSurface.get_width()
         height = textureSurface.get_height()
@@ -184,36 +202,8 @@ def loadTexture(textura):
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
 
-
         return texid
 
-def colisao(pos_x, pos_z, vet_x, vet_z, speed):
-    global m
-    index_x = (pos_x + vet_x*speed)/2
-    index_z = (pos_z + vet_z*speed)/2
-    #labNum = m[index_x][index_z]
-    if (abs(index_x - int(index_x)) < 0.5):
-        index_x = int(index_x)
-    else:
-        index_x = int(index_x) + 1
-
-    if (abs(index_z - int(index_z)) < 0.5):
-        index_z = int(index_z)
-    else:
-        index_z = int(index_z) + 1
-    try:
-        if (m[index_x][index_z] == 1):
-            print "colisao"
-            # or index_x > len(m) or index_z > len(m[0])
-            return False
-    except:
-        print "Vc está fora do labirinto"
-        return False
-
-    return True
-        
-    #print index_x," ",index_z
-    
 
 def main():
     pygame.init()
@@ -242,7 +232,7 @@ def main():
     lz = 1.0
     x = 0.0
     z = -2.0
-
+  
     #Fração da movimentação na direção da linha de visão
     speed = 0.1 
     
@@ -250,25 +240,19 @@ def main():
     glEnable(GL_DEPTH_TEST)
 
     #carrega Textura
-    loadTexture('textura_parede.jpeg')
+    loadTexture()
 
     #toca trilha sonora
     trilha_sonora.play()
 
 ##    glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA)
+    #iluminacao()
     
-    #iluminação
-##    iluminacao()
-
     while True:
-            
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit(pygame.quit())
-                
-
-        #glRotatef(1, 3, 1, 1)
-        
+                 
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         glPushMatrix()
         mapa = Map()
@@ -282,42 +266,39 @@ def main():
             camera_x = f[3][0]
             camera_y = f[3][1]
             camera_z = f[3][2]
-
-##            iluminacao(camera_x,camera_y,camera_z)
-                        
+        
             #print camera_x,",",camera_z
             
             if event.key == pygame.K_UP:
-                global lx, lz, x, z, speed
+                global lx, lz, x, z, speed, play_x, play_z
                 #movimentação na direção da linha de visão (sentido Frente)
                 #print mapa.mapa[0][3]
-                x += lx * speed 
-                z += lz * speed 
-                #print camera_x,",",camera_z
+                if not verificarColisao(x, z, lx, lz, speed, mapa, 1.35):
+                    x += lx * speed
+                    z += lz * speed
 
                 
+                #print camera_x,",",camera_z
                 
-                
+                #print play_x,",",play_z
                 
             if event.key == pygame.K_DOWN:
                 global lx, lz, x, z, speed
-                #movimentação na direção da linha de visão (sentido Trás)
-                x -= lx * speed 
-                z -= lz * speed 
-                #print camera_x,",",camera_z
-
-
                 
-                               
+                #movimentação na direção da linha de visão (sentido Trás)
+                if not verificarColisao(x, z, -lx, -lz, speed, mapa, 1.35):
+                    x -= lx * speed 
+                    z -= lz * speed
+                #print camera_x,",",camera_z
             if event.key == pygame.K_LEFT:
                 global lx, lz, angle
                 #Rotaciona a linha de visão em a esquerda
+                
                 angle -= 0.1
                 lx = math.sin(angle)
                 lz = math.cos(angle)
-                #print camera_x,",",camera_z
-
                 
+                #print camera_x,",",camera_z
                 
             if event.key == pygame.K_RIGHT:
                 global angle, lx, lz
@@ -327,24 +308,11 @@ def main():
                 lz = math.cos(angle)
                 #print camera_x,",",camera_z
 
-                
-            iluminacao(camera_x,camera_y,camera_z + 10)
+        # Reset transformations
+        glLoadIdentity()
+	# Set the camera
+        gluLookAt(x, 0.0, z,  x+lx, 0.0, z+lz,  0.0, -1.0,  0.0)
             
-        if (colisao(x,z,lx,lz,speed)):
-            # Reset transformations
-            glLoadIdentity()
-            # Set the camera
-            gluLookAt(x, 0.0, z,  x+lx, 0.0, z+lz,  0.0, -1.0,  0.0)
-            pos_valid = [x,z,(lx),(lz),angle]
-        else:
-            print x," ",z
-            print pos_valid[0]," ",pos_valid[1]
-            x = pos_valid[0]
-            z = pos_valid[1]
-            lx = pos_valid[2]
-            lz = pos_valid[3]
-            angle = pos_valid[4]
-        
         pygame.display.flip()
         pygame.time.wait(10)
 
