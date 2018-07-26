@@ -10,6 +10,29 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
+def loadTexture(textura):
+
+        textureSurface = pygame.image.load(textura) #carrega imagem da textura
+        textureData = pygame.image.tostring(textureSurface,"RGBA",1)
+        width = textureSurface.get_width()
+        height = textureSurface.get_height()
+
+        glEnable(GL_TEXTURE_2D)#habilita textura 2D
+        texid = glGenTextures(1)#ID da textura
+
+        glBindTexture(GL_TEXTURE_2D,texid)
+        glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,textureData)
+
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+
+        return texid
+
+
+
+
 
 class Cube(object):
     def __init__(self, posicao):
@@ -76,6 +99,7 @@ class Cube(object):
             )
         
         i = 0
+        
         
         glBegin(GL_QUADS)
         for edge in self.edges:
@@ -157,52 +181,43 @@ class Map():
                     self.ground.append(ground)
 
     def desenhar(self):
+
+        #desenha as paredes com a textura
+        tex0 = loadTexture('textura_parede.jpeg')
+        glEnable(GL_TEXTURE_2D)
+        glBindTexture(GL_TEXTURE_2D,tex0)
         for cubo in self.cubos:
             cubo.desenhar()
+        glDisable(GL_TEXTURE_2D)
+
+        #desenha o chão com a textura
+        tex1 = loadTexture('textura_chao.jpg')
+        glEnable(GL_TEXTURE_2D)
+        glBindTexture(GL_TEXTURE_2D,tex1)
         for ground in self.ground:
             ground.desenhar()
-    
-def iluminacao():
+        glDisable(GL_TEXTURE_2D)
+
+def iluminacao(camera_x,camera_y,camera_z):
     
     glShadeModel(GL_SMOOTH)
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_LIGHTING)
     
-    lightZeroPosition = [10., 10, 6., 1.]
-    lightZeroColor = [10.5, 10.5, 10.5, 11.0]
+##    lightZeroPosition = [10., 10, 6., 1.]
+    lightZeroPosition = [camera_x,camera_y,camera_z, 1.]
+
+    lightZeroColor = [0.5, 0.5, 0.5, 1]
     lightEspecular = [2., 4., 10., 1.]
     
     glLightfv(GL_LIGHT0, GL_POSITION, lightZeroPosition)
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightZeroColor)
-    
-    #glLightfv(GL_LIGHT0, GL_DIFFUSE, lightZeroColor)
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightEspecular)
     glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.1)
     glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.05)
     
     glEnable(GL_LIGHT0)
-    
 
-#Função para carregar a textura
-def loadTexture():
-
-        textureSurface = pygame.image.load('textura_parede.jpeg') #carrega imagem da textura
-        textureData = pygame.image.tostring(textureSurface,"RGBA",1)
-        width = textureSurface.get_width()
-        height = textureSurface.get_height()
-
-        glEnable(GL_TEXTURE_2D)#habilita textura 2D
-        texid = glGenTextures(1)#ID da textura
-
-        glBindTexture(GL_TEXTURE_2D,texid)
-        glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,textureData)
-
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-
-        return texid
 
 
 def main():
@@ -240,7 +255,7 @@ def main():
     glEnable(GL_DEPTH_TEST)
 
     #carrega Textura
-    loadTexture()
+##    loadTexture()
 
     #toca trilha sonora
     trilha_sonora.play()
@@ -307,6 +322,8 @@ def main():
                 lx = math.sin(angle)
                 lz = math.cos(angle)
                 #print camera_x,",",camera_z
+
+            iluminacao(camera_x,camera_y,camera_z + 10)
 
         # Reset transformations
         glLoadIdentity()
