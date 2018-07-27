@@ -238,7 +238,7 @@ def main():
     
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
+    gluPerspective(45, (display[0]/display[1]), 0.1, 50)
 
 
     #Carrega os audios
@@ -334,15 +334,15 @@ def main():
                 lz = math.cos(angle)
                 #print camera_x,",",camera_z
 
-            iluminacao(x + lx + 2,camera_y,z + lz + 2)
-
+            iluminacao(x+lx,camera_y,z+ lz+2)#iluminacao(camera_x,camera_y,camera_z + 10)
+        
         # Reset transformations
         glLoadIdentity()
 	# Set the camera
         gluLookAt(x, 0.0, z,  x+lx, 0.0, z+lz,  0.0, -1.0,  0.0)
             
         pygame.display.flip()
-        pygame.time.wait(5)
+        pygame.time.wait(10)
 
 
 if __name__ =="__main__":
