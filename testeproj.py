@@ -334,7 +334,7 @@ def main():
                 lz = math.cos(angle)
                 #print camera_x,",",camera_z
 
-            iluminacao(camera_x,camera_y,camera_z + 10)
+            iluminacao(x + lx + 2,camera_y,z + lz + 2)
 
         # Reset transformations
         glLoadIdentity()
@@ -342,7 +342,7 @@ def main():
         gluLookAt(x, 0.0, z,  x+lx, 0.0, z+lz,  0.0, -1.0,  0.0)
             
         pygame.display.flip()
-        pygame.time.wait(10)
+        pygame.time.wait(5)
 
 
 if __name__ =="__main__":
