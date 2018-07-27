@@ -238,7 +238,7 @@ def main():
     
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
+    gluPerspective(45, (display[0]/display[1]), 0.1, 50)
 
 
     #Carrega os audios
@@ -334,8 +334,8 @@ def main():
                 lz = math.cos(angle)
                 #print camera_x,",",camera_z
 
-            iluminacao(camera_x,camera_y,camera_z + 10)
-
+            iluminacao(x+lx,camera_y,z+ lz+2)#iluminacao(camera_x,camera_y,camera_z + 10)
+        
         # Reset transformations
         glLoadIdentity()
 	# Set the camera
